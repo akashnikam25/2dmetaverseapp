@@ -55,7 +55,8 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 			broadcastMessage(conn, websocket.TextMessage, leaveMessage)
 			return
 		}
+		msg := name + ":" + string(data)
 
-		broadcastMessage(conn, msgType, data)
+		broadcastMessage(conn, msgType, []byte(msg))
 	}
 }
