@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -21,31 +20,42 @@ var clients = make(map[*websocket.Conn]bool)
 
 func Run() error {
 	router := mux.NewRouter()
-
 	router.HandleFunc("/publiclobby", createOrjoinPublicLobby).Methods(http.MethodGet)
 	log.Println("Starting server on :8000...")
 	return http.ListenAndServe(":8000", router)
 }
 
-func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
-	conn, _ := upgrader.Upgrade(w, r, nil)
+func broadcastMessage(sender *websocket.Conn, msgType int, message []byte) {
+	for client := range clients {
+		if client != sender {
+			client.WriteMessage(msgType, message)
+		}
+	}
+}
 
-	//name := r.Header.Get("name")
+func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		http.Error(w, "Failed to upgrade connection", http.StatusInternalServerError)
+		return
+	}
+	defer conn.Close()
 
 	clients[conn] = true
+	defer delete(clients, conn)
+
+	joinMessage := []byte(name + " has joined")
+	broadcastMessage(conn, websocket.TextMessage, joinMessage)
 
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
-			delete(clients, conn)
+			leaveMessage := []byte(name + " has left")
+			broadcastMessage(conn, websocket.TextMessage, leaveMessage)
 			return
 		}
-		clients[conn] = false
-		for clientConn, flag := range clients {
-			if flag {
-				clientConn.WriteMessage(msgType, data)
-			}
-		}
-		clients[conn] = true
+
+		broadcastMessage(conn, msgType, data)
 	}
 }
