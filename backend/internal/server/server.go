@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"2dvideoapp/pkg/room"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -21,6 +23,7 @@ var clients = make(map[*websocket.Conn]bool)
 func Run() error {
 	router := mux.NewRouter()
 	router.HandleFunc("/publiclobby", createOrjoinPublicLobby).Methods(http.MethodGet)
+	router.HandleFunc("/room", room.JoinRoom).Methods(http.MethodGet)
 	log.Println("Starting server on :8000...")
 	return http.ListenAndServe(":8000", router)
 }
