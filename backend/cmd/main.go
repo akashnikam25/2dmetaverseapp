@@ -2,23 +2,16 @@ package main
 
 import (
 	"2dvideoapp/internal/server"
-	"fmt"
 	"log"
-	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-}
-
-func handleRequest(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	fmt.Println("hello world")
-	str := "inside from handlerequest"
-	w.Write([]byte(str))
-
-}
 func main() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	if err := server.Run(); err != nil {
 		log.Fatalln(err.Error())
 	}
