@@ -14,7 +14,7 @@ export const LandingPage = ()=>{
             }
         })
         console.log("token ", res.data.token)
-        localStorage.setItem("token", res.data.token)
+        localStorage.setItem("name", res.data.token)
         navigate("/room", {state:{name:name}})
     }
 
