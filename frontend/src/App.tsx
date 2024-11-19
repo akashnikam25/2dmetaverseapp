@@ -2,40 +2,50 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Room } from "./components/Room";
 import { LandingPage } from "./components/LandingPage"
 
+
+
 // function App() {
+//  const [socket, setSocket] = useState<WebSocket| null>(null)
+//  const [inp, setInp] = useState("")
+//  const [rsp, setRsp] = useState<string[]>([])
 
-//     const [rsp, setRsp] = useState<string>("")
-//     const [inp, setInp] = useState<string>("")
-//     const [name, setName] = useState<string>("")
+//   useEffect(()=>{
 //     const socket = new WebSocket("ws://localhost:8000/publiclobby")
-//     useEffect(()=>{
-//       socket.onopen = (e)=>{
-//         console.log("WebSocket connection opened")
-//       }
-//     },[])
-
-//     socket.onmessage = (e) =>{
-//       setRsp(e.data)
+//     socket.onopen = (e)=>{
+//       console.log("wesocket connection eastablised")
 //     }
+//     setSocket(socket)
+//   },[])
 
-//    function handlePublicLobby(){
-//     socket.send(inp)
+//   if (socket != null) {
+//     socket.onmessage = (e)=>{
+//       setRsp((prevRsp)=>[...prevRsp, e.data])
+//     }
+//   }
+  
+
+//   function handlePublicLobby(){
+//     console.log("hi from handlepublicloby")
+//     if (socket != null)
+//       socket.send(inp)
 //     setInp("")
 //   }
 
 //   return (
 //     <>
 //       <div className="card">
-//         {/* <input type="text" placeholder="enter your name" value={inp} onChange={(e)=>{
-//           setInp(e.target.value) 
-//         }} /> */}
+       
 //         <input type="text" placeholder="enter your message" value={inp} onChange={(e)=>{
 //           setInp(e.target.value) 
 //         }} />
 //         <button onClick={handlePublicLobby}>
 //           Send Message 
 //         </button>
-//         {rsp != ""?<div><span>{rsp}</span></div>:""}
+//         {rsp.map((message, index) => (
+//           <div key={index}>
+//             <span>{message}</span>
+//           </div>
+//         ))}
 //       </div>
 //     </>
 //   )

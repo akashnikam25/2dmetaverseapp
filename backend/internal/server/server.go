@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -28,11 +29,9 @@ func Run() error {
 	return http.ListenAndServe(":8000", router)
 }
 
-func broadcastMessage(sender *websocket.Conn, msgType int, message []byte) {
+func broadcastMessage(msgType int, message []byte) {
 	for client := range clients {
-		if client != sender {
-			client.WriteMessage(msgType, message)
-		}
+		client.WriteMessage(msgType, message)
 	}
 }
 
@@ -49,17 +48,17 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 	defer delete(clients, conn)
 
 	joinMessage := []byte(name + " has joined")
-	broadcastMessage(conn, websocket.TextMessage, joinMessage)
+	broadcastMessage(websocket.TextMessage, joinMessage)
 
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
 			leaveMessage := []byte(name + " has left")
-			broadcastMessage(conn, websocket.TextMessage, leaveMessage)
+			broadcastMessage(websocket.TextMessage, leaveMessage)
 			return
 		}
 		msg := name + ":" + string(data)
-
-		broadcastMessage(conn, msgType, []byte(msg))
+		fmt.Println("msg	:	", string(msg))
+		broadcastMessage(msgType, []byte(msg))
 	}
 }
