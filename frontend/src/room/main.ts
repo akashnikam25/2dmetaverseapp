@@ -1,4 +1,4 @@
-import { AUTO, Game } from "phaser";
+import { AUTO, Game, } from "phaser";
 import { Boot } from "./scenes/boot";
 import { Preloader } from "./scenes/Preloader";
 import { Room } from "./scenes/room";

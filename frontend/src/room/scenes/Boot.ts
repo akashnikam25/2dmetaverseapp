@@ -1,4 +1,4 @@
-import {Scene} from 'phaser'
+import { Scene } from 'phaser'
 
 export class Boot extends Scene{
     constructor(){
@@ -6,7 +6,7 @@ export class Boot extends Scene{
     }
 
     preload(){
-        this.load.image('background', 'assets/bg.png')
+        this.load.image('background', 'background-neon.png')
     }
 
     create(){
