@@ -38,11 +38,11 @@ export function Room(){
   }
 
   const currentScene = (scene: Phaser.Scene) => {
-        // if (scene){
-        //   const x = Phaser.Math.Between(64, scene.scale.width - 64);
-        //   const y = Phaser.Math.Between(64, scene.scale.height - 64);
-        //    scene.add.sprite(x, y, 'star');
-        // }
+        if (scene){
+          const x = Phaser.Math.Between(64, scene.scale.width - 64);
+          const y = Phaser.Math.Between(64, scene.scale.height - 64);
+           scene.add.sprite(x, y, 'star');
+        }
   }
 
   return (
