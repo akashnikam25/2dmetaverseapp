@@ -1,5 +1,5 @@
 import { Scene } from 'phaser'
-import background from './background-neon.png'
+import background from '../../assets/background-neon.png'
 
 export class Boot extends Scene{
     constructor(){

@@ -3,8 +3,6 @@ import { Boot } from "./scenes/boot";
 import { Preloader } from "./scenes/Preloader";
 import { Room } from "./scenes/room";
 
-
-
 const config : Phaser.Types.Core.GameConfig = {
     type:AUTO,
     width:1024,

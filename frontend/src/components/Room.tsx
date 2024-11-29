@@ -34,7 +34,7 @@ export function Room(){
   function handlePublicLobby(){
     if (socket != null)
       socket.send(inp)
-    setInp("")
+      setInp("")
   }
 
   const currentScene = (scene: Phaser.Scene) => {

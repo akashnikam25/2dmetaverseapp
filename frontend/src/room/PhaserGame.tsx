@@ -1,6 +1,5 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import CreateRoom from "./main";
-import { Room } from "./scenes/room";
 import { EventBus } from "./EventBus";
 
 
