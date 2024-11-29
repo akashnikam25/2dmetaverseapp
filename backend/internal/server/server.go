@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type wsData struct {
+	Type string `json:"type"`
+	X    int    `json:"x"`
+	Y    int    `json:"y"`
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -19,7 +26,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var clients = make(map[*websocket.Conn]bool)
+var clients = make(map[*websocket.Conn]wsData)
 
 func Run() error {
 	router := mux.NewRouter()
@@ -30,8 +37,32 @@ func Run() error {
 }
 
 func broadcastMessage(msgType int, message []byte) {
+
 	for client := range clients {
 		client.WriteMessage(msgType, message)
+	}
+}
+
+func addNewUser(msgType int, message []byte, conn *websocket.Conn) {
+
+	for client, res := range clients {
+		if client != conn {
+			jsonRsp, err := json.Marshal(res)
+			if err != nil {
+				log.Panic(err)
+			}
+			fmt.Println("json rsp", string(jsonRsp))
+			err = conn.WriteMessage(msgType, jsonRsp)
+			if err != nil {
+				fmt.Println("errr ", err)
+			}
+		}
+	}
+
+	for client := range clients {
+		if client != conn {
+			client.WriteMessage(msgType, message)
+		}
 	}
 }
 
@@ -43,22 +74,54 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-
-	clients[conn] = true
+	res := wsData{}
+	clients[conn] = res
 	defer delete(clients, conn)
 
-	joinMessage := []byte(name + " has joined")
-	broadcastMessage(websocket.TextMessage, joinMessage)
+	// joinMessage := []byte(name + " has joined")
+	// broadcastMessage(websocket.TextMessage, joinMessage)
 
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
-			leaveMessage := []byte(name + " has left")
-			broadcastMessage(websocket.TextMessage, leaveMessage)
+			// leaveMessage := []byte(name + " has left")
+			// broadcastMessage(websocket.TextMessage, leaveMessage)
+			removeRsp := wsData{
+				Type: "remove",
+				X:    clients[conn].X,
+				Y:    clients[conn].Y,
+			}
+
+			jsonRsp, err := json.Marshal(removeRsp)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			for client := range clients {
+				if client != conn {
+					err = client.WriteMessage(websocket.TextMessage, jsonRsp)
+					if err != nil {
+						log.Panic(err)
+					}
+				}
+			}
 			return
 		}
-		msg := name + ":" + string(data)
-		fmt.Println("msg	:	", string(msg))
-		broadcastMessage(msgType, []byte(msg))
+		res = clients[conn]
+		err = json.Unmarshal(data, &res)
+		if err != nil {
+			log.Panic(err)
+		}
+		clients[conn] = res
+
+		if res.Type == "add" {
+			addNewUser(msgType, data, conn)
+		}
+
+		if res.Type == "chat" {
+			msg := name + ":" + string(data)
+			broadcastMessage(msgType, []byte(msg))
+		}
+
 	}
 }

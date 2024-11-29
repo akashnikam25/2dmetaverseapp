@@ -4,14 +4,12 @@ import { IRefPhaserGame, PhaseGame } from "../room/PhaserGame"
 
 export function Room(){
  const [socket, setSocket] = useState<WebSocket| null>(null)
- const [inp, setInp] = useState("")
- const [rsp, setRsp] = useState<string[]>([])
+ const [sc, setScene] = useState<Phaser.Scene | null>(null)
+ const [sprite, setSprite] = useState<Phaser.GameObjects.Sprite| null>(null)
  const locator = useLocation()
-  //const [canMoveSprite, setCanMoveSprite] = useState(true);
 
-    //  References to the PhaserGame component (game and scene are exposed)
-    const phaserRef = useRef<IRefPhaserGame | null>(null);
-   // const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+
+  const phaserRef = useRef<IRefPhaserGame | null>(null);
 
   useEffect(()=>{
     if (socket== null){
@@ -25,44 +23,45 @@ export function Room(){
   },[])
 
   if (socket != null) {
-    socket.onmessage = (e)=>{
-      setRsp((prevRsp)=>[...prevRsp, e.data])
+    socket.onmessage = (event)=>{
+      const message = JSON.parse(event.data)
+      console.log(message)
+      if (message.type === "add"){
+        sc?.add.sprite(message.x, message.y, 'star')
+      }
+      if (message.type === "remove"){
+       sc?.children.each((child)=>{
+        console.log(child)
+        if (child instanceof Phaser.GameObjects.Sprite){
+          if (message.x === child.x && message.y=== child.y){
+            child.destroy()
+          }
+        }
+       })
+      }
     }
   }
   
 
-  function handlePublicLobby(){
-    if (socket != null)
-      socket.send(inp)
-      setInp("")
+  function handleAddSprite(x: number, y: number){
+    if (socket != null){
+      const addSprite = JSON.stringify({"type":"add","x":x,"y":y})
+      socket.send(addSprite)
+    }
   }
 
   const currentScene = (scene: Phaser.Scene) => {
         if (scene){
+          setScene(scene)
           const x = Phaser.Math.Between(64, scene.scale.width - 64);
           const y = Phaser.Math.Between(64, scene.scale.height - 64);
-           scene.add.sprite(x, y, 'star');
+          scene.add.sprite(x, y, 'star');
+          handleAddSprite(x, y)
         }
   }
 
   return (
     <>
-      {/* <div className="card">
-        <input type="text" placeholder="enter your message" value={inp} onChange={(e)=>{
-          setInp(e.target.value) 
-        }} />
-        <button onClick={handlePublicLobby}>
-          Send Message 
-        </button>
-        <div>
-        {rsp.map((message, index) => (
-          <div key={index}>
-            <span>{message}</span>
-          </div>
-        ))}
-      </div>
-      </div> */}
-
       <div>
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
       </div>
