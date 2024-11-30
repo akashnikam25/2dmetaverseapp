@@ -47,15 +47,11 @@ export const PhaseGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame(
 
     useEffect(() =>
     {
-        console.log("inside phaser game useEffect ")
         EventBus.on('current-scene-ready', (scene_instance: Phaser.Scene) =>
         {
-            console.log("inside eventbus")
             if (currentActiveScene && typeof currentActiveScene === 'function')
             {
-                console.log("inside eventbut key ",scene_instance.scene.key)
                 currentActiveScene(scene_instance);
-
             }
 
             if (typeof ref === 'function')

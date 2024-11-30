@@ -16,6 +16,7 @@ type wsData struct {
 	Type string `json:"type"`
 	X    int    `json:"x"`
 	Y    int    `json:"y"`
+	Id   string  `json:"id"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -115,12 +116,16 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		clients[conn] = res
 
 		if res.Type == "add" {
-			addNewUser(msgType, data, conn)
+			go addNewUser(msgType, data, conn)
+		}
+
+		if res.Type == "move"{
+			go broadcastMessage(msgType, data)
 		}
 
 		if res.Type == "chat" {
 			msg := name + ":" + string(data)
-			broadcastMessage(msgType, []byte(msg))
+			go broadcastMessage(msgType, []byte(msg))
 		}
 
 	}
