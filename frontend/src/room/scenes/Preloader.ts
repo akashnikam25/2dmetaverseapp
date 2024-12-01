@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import star from '../../assets/star.png'
+import nancy from '../../assets/nancy.png'
 
 export class Preloader extends Scene {
     constructor(){
@@ -7,7 +7,7 @@ export class Preloader extends Scene {
     }
 
     preload(){
-        this.load.image('star', star)
+        this.load.spritesheet('nancy', nancy, {frameWidth: 32, frameHeight: 48})
     }
 
     create(){

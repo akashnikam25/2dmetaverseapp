@@ -27,9 +27,130 @@ export function RoomComp(){
     socket.onmessage = (event)=>{
       const message = JSON.parse(event.data)
       console.log("WebSocket Message:", message);
-      const sc = phaserRef.current?.scene
+      const sc = phaserRef.current?.scene as Room
+      
       if (message.type === "add"){
-        sc?.add.sprite(message.x, message.y, 'star').setData("id", message.id)
+        const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
+        const animsFrameRate = 15
+        sprite?.anims.create({
+            key: 'nancy_idle_right',
+            frames: sprite.anims.generateFrameNames('nancy', {
+            start: 0,
+            end: 5,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate * 0.6,
+        })
+        sprite?.anims.create({
+            key: 'nancy_idle_up',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 6,
+            end: 11,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate * 0.6,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_idle_left',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 12,
+            end: 17,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate * 0.6,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_idle_down',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 18,
+            end: 23,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate * 0.6,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_run_right',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 24,
+            end: 29,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_run_up',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 30,
+            end: 35,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_run_left',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 36,
+            end: 41,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_run_down',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 42,
+            end: 47,
+            }),
+            repeat: -1,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_sit_down',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 48,
+            end: 48,
+            }),
+            repeat: 0,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_sit_left',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 49,
+            end: 49,
+            }),
+            repeat: 0,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_sit_right',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 50,
+            end: 50,
+            }),
+            repeat: 0,
+            frameRate: animsFrameRate,
+        })
+
+        sprite?.anims.create({
+            key: 'nancy_sit_up',
+            frames: sprite?.anims.generateFrameNames('nancy', {
+            start: 51,
+            end: 51,
+            }),
+            repeat: 0,
+            frameRate: animsFrameRate,
+        })
+
       }else if (message.type === "remove"){
        sc?.children.each((child)=>{
         if (child instanceof Phaser.GameObjects.Sprite){
@@ -43,7 +164,9 @@ export function RoomComp(){
           if (child instanceof Phaser.GameObjects.Sprite){
             if(child.getData("id") === message.id){
               child.setPosition(message.x, message.y)
-              
+              child.anims.play(message.anims, true)
+            }else{
+              child.anims.stop()
             }
           }
         })
@@ -59,9 +182,10 @@ export function RoomComp(){
     }
   }
 
-  function handleMoveSprite(x:number, y:number, id:string){
+  function handleMoveSprite(x:number, y:number, id:string, anims:string){
     if(socket){
-      const moveSprite = JSON.stringify({"type":"move","x":x,"y":y, "id":id})
+      console.log(anims)
+      const moveSprite = JSON.stringify({"type":"move","x":x,"y":y, "id":id, "anims":anims})
       socket.send(moveSprite)
     }
   }
@@ -71,7 +195,7 @@ export function RoomComp(){
           const uuid = uuidv4()
           const x = Phaser.Math.Between(64, scene.scale.width - 64);
           const y = Phaser.Math.Between(64, scene.scale.height - 64);
-          const sprite = scene.add.sprite(x, y, 'star').setData("id", uuid);
+          const sprite = scene.add.sprite(x, y, 'nancy', 20).setData("id", uuid);
           handleAddSprite(x, y, uuid);
 
           (scene as Room).handleMoveSprite = handleMoveSprite;

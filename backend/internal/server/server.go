@@ -13,10 +13,11 @@ import (
 )
 
 type wsData struct {
-	Type string `json:"type"`
-	X    int    `json:"x"`
-	Y    int    `json:"y"`
-	Id   string  `json:"id"`
+	Type  string `json:"type"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
+	Id    string `json:"id"`
+	Anims string `json:"anims"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -81,7 +82,6 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 
 	// joinMessage := []byte(name + " has joined")
 	// broadcastMessage(websocket.TextMessage, joinMessage)
-
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
@@ -119,7 +119,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 			go addNewUser(msgType, data, conn)
 		}
 
-		if res.Type == "move"{
+		if res.Type == "move" {
 			go broadcastMessage(msgType, data)
 		}
 
