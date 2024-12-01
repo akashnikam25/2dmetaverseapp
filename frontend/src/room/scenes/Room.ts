@@ -6,6 +6,7 @@ export class Room extends Scene {
     background!: GameObjects.Image;
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     public playerSprite?: GameObjects.Sprite;
+    public sprites:Map<string, {x:number, y:number}>= new Map()
 
     constructor(){
         super('Room')
@@ -173,14 +174,19 @@ export class Room extends Scene {
             this.playerSprite.anims.play('nancy_idle_right', true)
         }
 
-        if (moved) {
-            console.log("x ", newX, " y", newY)
+        const collision = Array.from(this.sprites.entries()).some(([id, position]) => {
+            if (id === this.playerSprite?.getData("id")) return false;
+                return (
+                Phaser.Math.Distance.Between(newX, newY, position.x, position.y) < 30 
+            );
+        });
+
+        if (moved && !collision) {
+            this.sprites.set(this.playerSprite.getData("id"),{"x":newX, "y":newY})
             this.playerSprite.setPosition(newX, newY);
             if (this.handleMoveSprite) {
                 this.handleMoveSprite(newX, newY, this.playerSprite.getData("id"), anims);
             }
         }
     }
-
-
 }

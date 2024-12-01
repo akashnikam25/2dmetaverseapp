@@ -28,7 +28,7 @@ export function RoomComp(){
       const message = JSON.parse(event.data)
       console.log("WebSocket Message:", message);
       const sc = phaserRef.current?.scene as Room
-      
+      sc.sprites.set(message.id,{"x":message.x, "y":message.y})
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
         const animsFrameRate = 15
@@ -199,7 +199,8 @@ export function RoomComp(){
           handleAddSprite(x, y, uuid);
 
           (scene as Room).handleMoveSprite = handleMoveSprite;
-          (scene as Room).playerSprite = sprite
+          (scene as Room).playerSprite = sprite;
+          (scene as Room).sprites.set(uuid, {"x": x, "y":y})
    
         }
   }
