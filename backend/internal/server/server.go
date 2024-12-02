@@ -49,6 +49,7 @@ func addNewUser(msgType int, message []byte, conn *websocket.Conn) {
 
 	for client, res := range clients {
 		if client != conn {
+			res.Type = "add"
 			jsonRsp, err := json.Marshal(res)
 			if err != nil {
 				log.Panic(err)
@@ -114,6 +115,8 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 		clients[conn] = res
+
+		fmt.Println("response ", res)
 
 		if res.Type == "add" {
 			go addNewUser(msgType, data, conn)
