@@ -1,20 +1,29 @@
 import { GameObjects, Scene } from "phaser";
 import { EventBus } from "../EventBus";
+import { Lobby } from "../RoomHandler/Lobby";
+
+
 
 export class Room extends Scene {
-    public handleMoveSprite?: (x: number, y: number, id: string, anims:string) => void;
-    background!: GameObjects.Image;
-    cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+    lobby:Lobby
+    private background!: GameObjects.Image;
+    private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     public playerSprite?: GameObjects.Sprite;
     public sprites:Map<string, {x:number, y:number}>= new Map()
-
+    public allParticipants:Map<string, GameObjects.Sprite> = new Map()
+    private graphics!: Phaser.GameObjects.Graphics;
+    public handleMoveSprite?: (x: number, y: number, id: string, anims:string) => void;
+    
     constructor(){
         super('Room')
+        this.lobby = new Lobby()
     }
 
     create(){
+        
         this.background = this.add.image(512, 384, 'background')     
         this.cursors = this.input.keyboard?.createCursorKeys();
+        this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0x00ff00 } })
         EventBus.emit('current-scene-ready', this);
 
         const animsFrameRate = 15
@@ -141,9 +150,11 @@ export class Room extends Scene {
     }
     update() {
         if (!this.cursors || !this.playerSprite) return;
+        this.graphics.clear()
 
         const speed = 5;
         let moved = false;
+        const proximityRadius = 50;
 
         let newX = this.playerSprite.x;
         let newY = this.playerSprite.y;
@@ -180,11 +191,36 @@ export class Room extends Scene {
                 Phaser.Math.Distance.Between(newX, newY, position.x, position.y) < 30 
             );
         });
+        let playerSpriteid = this.playerSprite.getData("id")
+        let meetingParticipant = [""]
+        this.sprites.forEach((position, id)=>{
+            console.log(position.x, position.y, id)
+            if (playerSpriteid != id ){
+                const isPresent= Phaser.Math.Distance.Between(newX, newY, position.x, position.y) < proximityRadius
+                if (isPresent){
+                    meetingParticipant.push(id)
+                }
+            } 
+        })
+        for(let i=1; i<meetingParticipant.length ;i++){
+            const isPresent = this.lobby.isParticipantInMeeting(meetingParticipant[i])
+            if (isPresent){
+                this.lobby.addPlayerToMeeting(this.playerSprite)
+                break;
+            }else{
+                const sprite = this.allParticipants.get(meetingParticipant[i])
+                if (sprite){
+                    this.lobby.createMeeting(this.playerSprite,sprite)
+                }
+                
+            }
+        }
 
-        if (moved && !collision) {
-            this.sprites.set(this.playerSprite.getData("id"),{"x":newX, "y":newY})
-            this.playerSprite.setPosition(newX, newY);
-            if (this.handleMoveSprite) {
+        if (moved) {
+            if (!collision && this.handleMoveSprite) {
+                this.sprites.set(this.playerSprite.getData("id"),{"x":newX, "y":newY})
+                this.allParticipants.set(this.playerSprite.getData("id"), this.playerSprite )
+                this.playerSprite.setPosition(newX, newY);
                 this.handleMoveSprite(newX, newY, this.playerSprite.getData("id"), anims);
             }
         }

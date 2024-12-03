@@ -13,8 +13,8 @@ export const LandingPage = ()=>{
                 "Content-Type":"application/json"
             }
         })
-        console.log("token ", res.data.token)
-        localStorage.setItem("name", res.data.token)
+        console.log("token ", res)
+       // localStorage.setItem("name", res.data.token)
         navigate("/room", {state:{name:name}})
     }
 

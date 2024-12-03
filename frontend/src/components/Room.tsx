@@ -200,7 +200,8 @@ export function RoomComp(){
 
           (scene as Room).handleMoveSprite = handleMoveSprite;
           (scene as Room).playerSprite = sprite;
-          (scene as Room).sprites.set(uuid, {"x": x, "y":y})
+          (scene as Room).sprites.set(uuid, {"x": x, "y":y});
+          (scene as Room).allParticipants.set(uuid, sprite)
    
         }
   }
