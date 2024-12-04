@@ -26,9 +26,10 @@ export function RoomComp(){
   if (socket != null) {
     socket.onmessage = (event)=>{
       const message = JSON.parse(event.data)
-      console.log("WebSocket Message:", message);
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
+
+      
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
         const animsFrameRate = 15
@@ -151,6 +152,14 @@ export function RoomComp(){
             frameRate: animsFrameRate,
         })
 
+        sc?.children.each((child)=>{
+        if (child instanceof Phaser.GameObjects.Sprite){
+          if (child.getData("id") === message.id){
+            sc.allParticipants.set(message.id, child)
+          }
+        }
+       })
+
       }else if (message.type === "remove"){
        sc?.children.each((child)=>{
         if (child instanceof Phaser.GameObjects.Sprite){
@@ -184,7 +193,6 @@ export function RoomComp(){
 
   function handleMoveSprite(x:number, y:number, id:string, anims:string){
     if(socket){
-      console.log(anims)
       const moveSprite = JSON.stringify({"type":"move","x":x,"y":y, "id":id, "anims":anims})
       socket.send(moveSprite)
     }
@@ -201,14 +209,13 @@ export function RoomComp(){
           (scene as Room).handleMoveSprite = handleMoveSprite;
           (scene as Room).playerSprite = sprite;
           (scene as Room).sprites.set(uuid, {"x": x, "y":y});
-          (scene as Room).allParticipants.set(uuid, sprite)
-   
+          (scene as Room).allParticipants.set(uuid, sprite);
         }
   }
 
   return (
     <>
-      <div>
+      <div className="bg-black-500">
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
       </div>
     </>

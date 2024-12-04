@@ -32,7 +32,7 @@ export class Meeting {
     }
 
     isEmpty():boolean{
-        return this.participants.size === 0
+        return this.participants.size === 1
     }
 
 }
