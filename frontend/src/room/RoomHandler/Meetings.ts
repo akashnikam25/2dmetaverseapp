@@ -2,37 +2,35 @@ import { GameObjects} from "phaser";
 
 export class Meeting {
     private id:string ;
-    private participants:Map<string, GameObjects.Sprite>
+    private participants:Set<string>
 
     constructor(meetingId:string){
         this.id = meetingId
-        this.participants = new Map()
+        this.participants = new Set()
     }
 
     getMeetingId(){
         return this.id;
     }
 
-    addParticipants(sprite:GameObjects.Sprite){
-        const spritId = sprite.getData("id")
-        this.participants.set(spritId, sprite)
+    addParticipants(participantId:string){
+        this.participants.add(participantId)
     }
 
-    removeParticipants(sprite:GameObjects.Sprite){
-        const spritId = sprite.getData("id")
-        this.participants.delete(spritId)
+    removeParticipants(participantId:string){
+        this.participants.delete(participantId)
     }
 
     hasParticipant(spriteId:string):boolean{
         return this.participants.has(spriteId)
     }
     
-    getParticipant():GameObjects.Sprite []{
+    getParticipant():string[]{
         return Array.from(this.participants.values())
     }
 
     isEmpty():boolean{
-        return this.participants.size === 0
+        return this.participants.size === 1
     }
 
 }

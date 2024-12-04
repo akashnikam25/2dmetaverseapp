@@ -26,9 +26,10 @@ export function RoomComp(){
   if (socket != null) {
     socket.onmessage = (event)=>{
       const message = JSON.parse(event.data)
-      console.log("WebSocket Message:", message);
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
+
+      
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
         const animsFrameRate = 15
@@ -170,6 +171,12 @@ export function RoomComp(){
             }
           }
         })
+      }else if (message.type === "createMeeting"){
+        sc.lobby.createMeeting(message.participant[0], message.participant[1]);
+      }else if(message.type === "AddParticipantInMeeting"){
+        sc.lobby.addPlayerToMeeting(message.participant[0], message.participant[1])
+      }else if (message.type === "RemoveParticipantFromMeeting"){
+        sc.lobby.removePlayerFromMeeting(message.participant[0])
       }
     }
   }
@@ -184,9 +191,15 @@ export function RoomComp(){
 
   function handleMoveSprite(x:number, y:number, id:string, anims:string){
     if(socket){
-      console.log(anims)
       const moveSprite = JSON.stringify({"type":"move","x":x,"y":y, "id":id, "anims":anims})
       socket.send(moveSprite)
+    }
+  }
+
+  function handleMeetingOperation(type:string, allParticipants: string []){
+    if (socket){
+      const meetingMsg = JSON.stringify({"type":type, allParticipants:allParticipants})
+      socket.send(meetingMsg)
     }
   }
 
@@ -199,16 +212,15 @@ export function RoomComp(){
           handleAddSprite(x, y, uuid);
 
           (scene as Room).handleMoveSprite = handleMoveSprite;
+          (scene as Room).handleMeetingOperation = handleMeetingOperation;
           (scene as Room).playerSprite = sprite;
           (scene as Room).sprites.set(uuid, {"x": x, "y":y});
-          (scene as Room).allParticipants.set(uuid, sprite)
-   
         }
   }
 
   return (
     <>
-      <div>
+      <div className="bg-black-500">
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
       </div>
     </>
