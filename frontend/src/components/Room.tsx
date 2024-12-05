@@ -152,6 +152,8 @@ export function RoomComp(){
             frameRate: animsFrameRate,
         })
 
+
+
       }else if (message.type === "remove"){
        sc?.children.each((child)=>{
         if (child instanceof Phaser.GameObjects.Sprite){
