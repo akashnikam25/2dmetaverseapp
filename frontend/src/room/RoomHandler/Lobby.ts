@@ -1,4 +1,3 @@
-import { GameObjects } from "phaser";
 import { Meeting } from "./Meetings";
 import { v4 as uuidv4 } from 'uuid';
 

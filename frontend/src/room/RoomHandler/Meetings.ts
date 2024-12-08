@@ -1,5 +1,3 @@
-import { GameObjects} from "phaser";
-
 export class Meeting {
     private id:string ;
     private participants:Set<string>
