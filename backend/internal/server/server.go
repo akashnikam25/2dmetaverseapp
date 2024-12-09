@@ -13,11 +13,12 @@ import (
 )
 
 type wsData struct {
-	Type  string `json:"type"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
-	Id    string `json:"id"`
-	Anims string `json:"anims"`
+	Type         string   `json:"type"`
+	X            int      `json:"x"`
+	Y            int      `json:"y"`
+	Id           string   `json:"id"`
+	Anims        string   `json:"anims"`
+	Participants []string `json:"participants"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -62,6 +63,14 @@ func addNewUser(msgType int, message []byte, conn *websocket.Conn) {
 		}
 	}
 
+	for client := range clients {
+		if client != conn {
+			client.WriteMessage(msgType, message)
+		}
+	}
+}
+
+func meeting(msgType int, message []byte, conn *websocket.Conn) {
 	for client := range clients {
 		if client != conn {
 			client.WriteMessage(msgType, message)
@@ -123,12 +132,15 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if res.Type == "move" {
-			go broadcastMessage(msgType, data)
+			broadcastMessage(msgType, data)
 		}
 
 		if res.Type == "chat" {
 			msg := name + ":" + string(data)
-			go broadcastMessage(msgType, []byte(msg))
+			broadcastMessage(msgType, []byte(msg))
+		}
+		if res.Type == "CreateMeeting" || res.Type == "AddParticipantInMeeting" || res.Type == "RemoveParticipantFromMeeting" {
+			meeting(msgType, data, conn)
 		}
 
 	}

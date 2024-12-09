@@ -227,11 +227,13 @@ export class Room extends Scene {
                 if (isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
                     console.log("player added into meeting  ", meetingParticipant[i])
                     this.lobby.addPlayerToMeeting(meetingParticipant[i], playerSpriteid)
-                    this.handleMeetingOperation("AddParticipantInMeeting", [playerSpriteid])
+                    const players = this.lobby.getAllMeetingParticipant(playerSpriteid)
+                    console.log("players    : ", players)
+                    this.handleMeetingOperation("AddParticipantInMeeting", [meetingParticipant[i], playerSpriteid])
                 }else if(!isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
                     console.log("meeting crated  Participant1=",this.playerSprite.getData("id"), "  Participant2=", meetingParticipant[i])
-                    this.lobby.createMeeting(meetingParticipant[i], playerSpriteid)
-                    this.handleMeetingOperation("CreateMeeting", [playerSpriteid, meetingParticipant[i]]);
+                    const meetingId= this.lobby.createMeeting(meetingParticipant[i], playerSpriteid, "")
+                    this.handleMeetingOperation("CreateMeeting", [playerSpriteid, meetingParticipant[i], meetingId]);
                 }
             }
 

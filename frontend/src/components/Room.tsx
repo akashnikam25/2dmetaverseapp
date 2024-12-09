@@ -4,6 +4,17 @@ import { IRefPhaserGame, PhaseGame } from "../room/PhaserGame"
 import { v4 as uuidv4 } from 'uuid';
 import { Room } from "../room/scenes/room";
 
+
+ type WsData = {
+  type: string;
+  x: number;
+  y: number;
+  id: string;
+  anims: string;
+  participants: string[];
+};
+
+
 export function RoomComp(){
  const [socket, setSocket] = useState<WebSocket| null>(null)
  const locator = useLocation()
@@ -25,7 +36,7 @@ export function RoomComp(){
 
   if (socket != null) {
     socket.onmessage = (event)=>{
-      const message = JSON.parse(event.data)
+      const message: WsData = JSON.parse(event.data) as WsData;
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
 
@@ -173,12 +184,15 @@ export function RoomComp(){
             }
           }
         })
-      }else if (message.type === "createMeeting"){
-        sc.lobby.createMeeting(message.participant[0], message.participant[1]);
-      }else if(message.type === "AddParticipantInMeeting"){
-        sc.lobby.addPlayerToMeeting(message.participant[0], message.participant[1])
-      }else if (message.type === "RemoveParticipantFromMeeting"){
-        sc.lobby.removePlayerFromMeeting(message.participant[0])
+      }else if (message.type === "CreateMeeting" && message.participants.length ===3 ){
+        console.log("inside createmeeting ")
+        const meetingId = sc.lobby.createMeeting(message.participants[0], message.participants[1], message.participants[2]);
+        console.log("inside createmeeting =meeting id", meetingId, "=",  message.participants[2])
+      }else if(message.type === "AddParticipantInMeeting" && message.participants.length === 2){
+        sc.lobby.addPlayerToMeeting(message.participants[0], message.participants[1])
+        sc.lobby.getAllMeetingParticipant(message.participants[1])
+      }else if (message.type === "RemoveParticipantFromMeeting" && message.participants.length === 1){
+        sc.lobby.removePlayerFromMeeting(message.participants[0])
       }
     }
   }
@@ -200,7 +214,8 @@ export function RoomComp(){
 
   function handleMeetingOperation(type:string, allParticipants: string []){
     if (socket){
-      const meetingMsg = JSON.stringify({"type":type, allParticipants:allParticipants})
+      console.log("allParticipants  :",allParticipants)
+      const meetingMsg = JSON.stringify({"type":type, "participants":allParticipants})
       socket.send(meetingMsg)
     }
   }
