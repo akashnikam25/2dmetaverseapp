@@ -15,7 +15,6 @@ export const PhaseGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame(
     const game = useRef<Phaser.Game | null>(null!);
     useLayoutEffect(() =>
     {
-        console.log("inside phaser game useLayoutEffect")
         if (game.current === null)
         {
 
@@ -33,7 +32,6 @@ export const PhaseGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame(
 
         return () =>
         {
-            console.log("inside phaser game return ")
             if (game.current)
             {
                 game.current.destroy(true);

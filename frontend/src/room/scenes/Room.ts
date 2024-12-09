@@ -154,7 +154,7 @@ export class Room extends Scene {
 
         const speed = 5;
         let moved = false;
-        const proximityRadius = 50;
+        const proximityRadius = 100;
 
         let newX = this.playerSprite.x;
         let newY = this.playerSprite.y;
@@ -200,10 +200,11 @@ export class Room extends Scene {
                     let spriteId = participants[i]
                         const position = this.sprites.get(spriteId) 
                         if (position){
-                            if (Phaser.Math.Distance.Between(newX, newY, position.x, position.y) > 50 ){
-                                console.log("player Removed from meeting", participants[i])
+                            if (Phaser.Math.Distance.Between(newX, newY, position.x, position.y) > 100 ){
+                                console.log("remove player from meeting",participants[i] )
                                 this.lobby.removePlayerFromMeeting(participants[i])
                                 this.handleMeetingOperation("RemoveParticipantFromMeeting", [spriteId])
+                                break;
                             }
                         }
                     }
@@ -221,17 +222,13 @@ export class Room extends Scene {
                 } 
             })
 
-            console.log(meetingParticipant)
             for(let i=1; i<meetingParticipant.length ;i++){
                 const isPresent = this.lobby.isParticipantInMeeting(meetingParticipant[i])
                 if (isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
-                    console.log("player added into meeting  ", meetingParticipant[i])
                     this.lobby.addPlayerToMeeting(meetingParticipant[i], playerSpriteid)
-                    const players = this.lobby.getAllMeetingParticipant(playerSpriteid)
-                    console.log("players    : ", players)
+                    this.lobby.getAllMeetingParticipant(playerSpriteid)
                     this.handleMeetingOperation("AddParticipantInMeeting", [meetingParticipant[i], playerSpriteid])
                 }else if(!isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
-                    console.log("meeting crated  Participant1=",this.playerSprite.getData("id"), "  Participant2=", meetingParticipant[i])
                     const meetingId= this.lobby.createMeeting(meetingParticipant[i], playerSpriteid, "")
                     this.handleMeetingOperation("CreateMeeting", [playerSpriteid, meetingParticipant[i], meetingId]);
                 }

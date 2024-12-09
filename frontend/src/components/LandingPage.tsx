@@ -7,14 +7,11 @@ export const LandingPage = ()=>{
     const navigate = useNavigate()
 
     const handleJoin = async ()=>{
-        console.log("handle join")
-        var res = await axios.get("http://localhost:8000/room?name="+name ,{
+       await axios.get("http://localhost:8000/room?name="+name ,{
             headers:{
                 "Content-Type":"application/json"
             }
         })
-        console.log("token ", res)
-       // localStorage.setItem("name", res.data.token)
         navigate("/room", {state:{name:name}})
     }
 

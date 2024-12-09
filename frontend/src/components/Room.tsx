@@ -185,12 +185,10 @@ export function RoomComp(){
           }
         })
       }else if (message.type === "CreateMeeting" && message.participants.length ===3 ){
-        console.log("inside createmeeting ")
-        const meetingId = sc.lobby.createMeeting(message.participants[0], message.participants[1], message.participants[2]);
-        console.log("inside createmeeting =meeting id", meetingId, "=",  message.participants[2])
+        sc.lobby.createMeeting(message.participants[0], message.participants[1], message.participants[2]);
+      
       }else if(message.type === "AddParticipantInMeeting" && message.participants.length === 2){
         sc.lobby.addPlayerToMeeting(message.participants[0], message.participants[1])
-        sc.lobby.getAllMeetingParticipant(message.participants[1])
       }else if (message.type === "RemoveParticipantFromMeeting" && message.participants.length === 1){
         sc.lobby.removePlayerFromMeeting(message.participants[0])
       }
@@ -214,7 +212,7 @@ export function RoomComp(){
 
   function handleMeetingOperation(type:string, allParticipants: string []){
     if (socket){
-      console.log("allParticipants  :",allParticipants)
+     // console.log("allParticipants  :",allParticipants)
       const meetingMsg = JSON.stringify({"type":type, "participants":allParticipants})
       socket.send(meetingMsg)
     }

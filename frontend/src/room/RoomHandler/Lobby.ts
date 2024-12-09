@@ -21,8 +21,7 @@ export class Lobby{
         this.meetings.set(meetingId,meeting)
         this.participantMeetingMap.set(participant1, meetingId)
         this.participantMeetingMap.set(participant2, meetingId)
-        console.log("getall meeting participant ",meeting.getParticipant())
-        console.log("participantmeeting map",this.participantMeetingMap)
+        console.log("create player ",this.participantMeetingMap)
         return meetingId
     }
 
@@ -30,11 +29,13 @@ export class Lobby{
         const meetingId = this.participantMeetingMap.get(existingParticipant)
         if (meetingId){
             const meeting = this.meetings.get(meetingId)
+            console.log("addplayer to meetomg ", meeting)
             if (meeting) {
                 meeting.addParticipants(participantId)
                 this.participantMeetingMap.set(participantId, meetingId)
             }
         }
+        console.log("participantMeetingMap add player ", this.participantMeetingMap)
     }
 
     removePlayerFromMeeting(participantId:string) {
@@ -42,15 +43,16 @@ export class Lobby{
     
         if (meetingId) {
             const meeting = this.meetings.get(meetingId)
-            console.log("meeting participant ",meeting?.getParticipant())
             if (meeting) {
                 meeting.removeParticipants(participantId)
+                console.log("Meeting    ", meeting)
                 if (meeting.isEmpty()) {
-                    console.log("meeting are empty")
+                    console.log("inside empty")
                     this.meetings.delete(meetingId)
                     this.participantMeetingMap.delete(meeting.getParticipant()[0]);
                 }
             }
+            console.log("participantMeetingMap remove player ", this.participantMeetingMap)
             this.participantMeetingMap.delete(participantId);
         }
     }
