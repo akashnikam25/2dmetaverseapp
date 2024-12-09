@@ -10,8 +10,10 @@ export class Lobby{
         this.participantMeetingMap = new Map()
     }
 
-    createMeeting(participant1:string, participant2:string){
-        const meetingId = uuidv4()
+    createMeeting(participant1:string, participant2:string, meetingId:string):string{
+        if (meetingId === ""){
+            meetingId = uuidv4()
+        }
         let meeting = new Meeting(meetingId)
         meeting.addParticipants(participant1)
         meeting.addParticipants(participant2)
@@ -21,6 +23,7 @@ export class Lobby{
         this.participantMeetingMap.set(participant2, meetingId)
         console.log("getall meeting participant ",meeting.getParticipant())
         console.log("participantmeeting map",this.participantMeetingMap)
+        return meetingId
     }
 
     addPlayerToMeeting(existingParticipant:string, participantId:string) {
