@@ -1,22 +1,18 @@
 import { GameObjects, Scene } from "phaser";
 import { EventBus } from "../EventBus";
-import { Lobby } from "../RoomHandler/Lobby";
 
 
 
 export class Room extends Scene {
-    lobby:Lobby
     private background!: GameObjects.Image;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     public playerSprite?: GameObjects.Sprite;
     public sprites:Map<string, {x:number, y:number}>= new Map()
     private graphics!: Phaser.GameObjects.Graphics;
     public handleMoveSprite?: (x: number, y: number, id: string, anims:string) => void;
-    public handleMeetingOperation?:(type:string, participants:string[])=>void;
     
     constructor(){
         super('Room')
-        this.lobby = new Lobby()
     }
 
     create(){
@@ -154,7 +150,7 @@ export class Room extends Scene {
 
         const speed = 5;
         let moved = false;
-        const proximityRadius = 100;
+        const proximityRadius = 50;
 
         let newX = this.playerSprite.x;
         let newY = this.playerSprite.y;
@@ -184,7 +180,7 @@ export class Room extends Scene {
             anims = "nancy_idle_right"
             this.playerSprite.anims.play('nancy_idle_right', true)
         }
-        if (moved && this.handleMeetingOperation) {
+        if (moved ) {
             const collision = Array.from(this.sprites.entries()).some(([id, position]) => {
                 if (id === this.playerSprite?.getData("id")) return false;
                     return (
@@ -192,47 +188,7 @@ export class Room extends Scene {
                 );
             });
 
-            let playerSpriteid = this.playerSprite.getData("id")
-            if (this.lobby.isParticipantInMeeting(playerSpriteid)){
-                const participants = this.lobby.getAllMeetingParticipant(playerSpriteid)
-                if (participants){
-                    for(let i=0; i<participants.length; i++){
-                    let spriteId = participants[i]
-                        const position = this.sprites.get(spriteId) 
-                        if (position){
-                            if (Phaser.Math.Distance.Between(newX, newY, position.x, position.y) > 100 ){
-                                console.log("remove player from meeting",participants[i] )
-                                this.lobby.removePlayerFromMeeting(participants[i])
-                                this.handleMeetingOperation("RemoveParticipantFromMeeting", [spriteId])
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-            }
-
-            let meetingParticipant = [""]
-            this.sprites.forEach((position, id)=>{
-                if (playerSpriteid != id ){
-                    const isPresent= Phaser.Math.Distance.Between(newX, newY, position.x, position.y) < proximityRadius
-                    if (isPresent){
-                        meetingParticipant.push(id)
-                    }
-                } 
-            })
-
-            for(let i=1; i<meetingParticipant.length ;i++){
-                const isPresent = this.lobby.isParticipantInMeeting(meetingParticipant[i])
-                if (isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
-                    this.lobby.addPlayerToMeeting(meetingParticipant[i], playerSpriteid)
-                    this.lobby.getAllMeetingParticipant(playerSpriteid)
-                    this.handleMeetingOperation("AddParticipantInMeeting", [meetingParticipant[i], playerSpriteid])
-                }else if(!isPresent && !this.lobby.isParticipantInMeeting(playerSpriteid)){
-                    const meetingId= this.lobby.createMeeting(meetingParticipant[i], playerSpriteid, "")
-                    this.handleMeetingOperation("CreateMeeting", [playerSpriteid, meetingParticipant[i], meetingId]);
-                }
-            }
+       
 
             if (!collision && this.handleMoveSprite) {
                 this.sprites.set(this.playerSprite.getData("id"),{"x":newX, "y":newY})

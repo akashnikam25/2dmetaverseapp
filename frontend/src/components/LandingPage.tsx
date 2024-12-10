@@ -16,7 +16,7 @@ export const LandingPage = ()=>{
     }
 
     return <>
-       <div className="flex flex-col justify-center items-center min-h-screen  bg-black-500 border ">
+       <div className="flex flex-col justify-center items-center min-h-screen  bg-black border ">
         <div className="w-80 p-4 bg-white rounded-lg shadow-lg text-black " style={{ height: '200px' }} >
             <div  className="flex flex-col items-center justify-center p-2">
                 <h1 className="text-xl font-bold">Chat Room</h1>

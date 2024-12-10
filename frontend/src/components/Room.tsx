@@ -184,13 +184,6 @@ export function RoomComp(){
             }
           }
         })
-      }else if (message.type === "CreateMeeting" && message.participants.length ===3 ){
-        sc.lobby.createMeeting(message.participants[0], message.participants[1], message.participants[2]);
-      
-      }else if(message.type === "AddParticipantInMeeting" && message.participants.length === 2){
-        sc.lobby.addPlayerToMeeting(message.participants[0], message.participants[1])
-      }else if (message.type === "RemoveParticipantFromMeeting" && message.participants.length === 1){
-        sc.lobby.removePlayerFromMeeting(message.participants[0])
       }
     }
   }
@@ -207,15 +200,7 @@ export function RoomComp(){
     if(socket){
       const moveSprite = JSON.stringify({"type":"move","x":x,"y":y, "id":id, "anims":anims})
       socket.send(moveSprite)
-    }
-  }
-
-  function handleMeetingOperation(type:string, allParticipants: string []){
-    if (socket){
-     // console.log("allParticipants  :",allParticipants)
-      const meetingMsg = JSON.stringify({"type":type, "participants":allParticipants})
-      socket.send(meetingMsg)
-    }
+    } 
   }
 
   const currentScene = (scene: Phaser.Scene) => {
@@ -223,11 +208,11 @@ export function RoomComp(){
           const uuid = uuidv4()
           const x = Phaser.Math.Between(64, scene.scale.width - 64);
           const y = Phaser.Math.Between(64, scene.scale.height - 64);
-          const sprite = scene.add.sprite(x, y, 'nancy', 20).setData("id", uuid);
+          const sprite  = scene.add.sprite(x, y, 'nancy', 20)
+          sprite.setData("id", uuid)
           handleAddSprite(x, y, uuid);
 
           (scene as Room).handleMoveSprite = handleMoveSprite;
-          (scene as Room).handleMeetingOperation = handleMeetingOperation;
           (scene as Room).playerSprite = sprite;
           (scene as Room).sprites.set(uuid, {"x": x, "y":y});
         }
