@@ -25,8 +25,8 @@ type player struct {
 }
 
 type Meeting struct {
-	Id           string   `json:"id"`
-	Participants []string `json:participants`
+	Id           string
+	Participants []string
 }
 
 var upgrader = websocket.Upgrader{
@@ -95,7 +95,7 @@ func manageProximity(conn *websocket.Conn, res player) {
 				meeting.Participants = removeParticipants(meeting.Participants, playerId)
 				updatedMeeting = true
 
-				if len(meeting.Participants) == 0 {
+				if len(meeting.Participants) == 1 {
 					delete(meetings, meeting.Id)
 				}
 			}
@@ -107,6 +107,11 @@ func manageProximity(conn *websocket.Conn, res player) {
 			if client != conn && calculateDistance(res.X, res.Y, otherPlayer.X, otherPlayer.Y) <= float64(proximityRadius) {
 				existingMeeting := findMeetingByParticipant(otherPlayer.Id)
 				if existingMeeting != nil {
+					for _, participant := range existingMeeting.Participants {
+						if participant == playerId {
+							return
+						}
+					}
 					existingMeeting.Participants = append(existingMeeting.Participants, playerId)
 				} else {
 					meetingID := generateMeetingID()
@@ -218,12 +223,13 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if res.Type == "move" {
-			manageProximity(conn, res)
+			broadcastMessage(msgType, data)
+			go manageProximity(conn, res)
 		}
 
 		if res.Type == "chat" {
 			msg := name + ":" + string(data)
-			broadcastMessage(msgType, []byte(msg))
+			go broadcastMessage(msgType, []byte(msg))
 		}
 
 	}

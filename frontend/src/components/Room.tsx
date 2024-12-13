@@ -35,7 +35,8 @@ export function RoomComp(){
 
   if (socket != null) {
     socket.onmessage = (event)=>{
-      const message: Player = JSON.parse(event.data) as Player;
+      const message = JSON.parse(event.data) ;
+
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
 
@@ -183,6 +184,9 @@ export function RoomComp(){
             }
           }
         })
+      }
+      else if (message.type === "meeting_update"){
+        console.log("meetings :- ", message.meetings)
       }
     }
   }
