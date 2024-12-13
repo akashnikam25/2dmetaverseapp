@@ -5,13 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Room } from "../room/scenes/room";
 
 
- type WsData = {
+ type Player  = {
   type: string;
   x: number;
   y: number;
   id: string;
   anims: string;
-  participants: string[];
 };
 
 
@@ -36,7 +35,7 @@ export function RoomComp(){
 
   if (socket != null) {
     socket.onmessage = (event)=>{
-      const message: WsData = JSON.parse(event.data) as WsData;
+      const message: Player = JSON.parse(event.data) as Player;
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
 
@@ -188,7 +187,6 @@ export function RoomComp(){
     }
   }
   
-
   function handleAddSprite(x: number, y: number, id:string){
     if (socket){
       const addSprite = JSON.stringify({"type":"add","x":x,"y":y, "id":id})

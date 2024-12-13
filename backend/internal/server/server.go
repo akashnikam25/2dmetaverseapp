@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
+	"time"
 
 	"2dvideoapp/pkg/room"
 
@@ -12,12 +14,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type wsData struct {
+const proximityRadius = 50
+
+type player struct {
 	Type  string `json:"type"`
 	X     int    `json:"x"`
 	Y     int    `json:"y"`
 	Id    string `json:"id"`
 	Anims string `json:"anims"`
+}
+
+type Meeting struct {
+	Id           string   `json:"id"`
+	Participants []string `json:participants`
 }
 
 var upgrader = websocket.Upgrader{
@@ -28,7 +37,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var clients = make(map[*websocket.Conn]wsData)
+var clients = make(map[*websocket.Conn]player)
+var meetings = make(map[string]*Meeting)
 
 func Run() error {
 	router := mux.NewRouter()
@@ -69,6 +79,91 @@ func addNewUser(msgType int, message []byte, conn *websocket.Conn) {
 	}
 }
 
+func calculateDistance(x1, y1, x2, y2 int) float64 {
+	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
+}
+
+func manageProximity(conn *websocket.Conn, res player) {
+	playerId := res.Id
+	updatedMeeting := false
+
+	for _, meeting := range meetings {
+		for _, participantID := range meeting.Participants {
+			otherplayer := findPlayerByID(participantID)
+
+			if otherplayer != nil && calculateDistance(res.X, res.Y, otherplayer.X, otherplayer.Y) > float64(proximityRadius) {
+				meeting.Participants = removeParticipants(meeting.Participants, playerId)
+				updatedMeeting = true
+
+				if len(meeting.Participants) == 0 {
+					delete(meetings, meeting.Id)
+				}
+			}
+		}
+	}
+
+	if !updatedMeeting {
+		for client, otherPlayer := range clients {
+			if client != conn && calculateDistance(res.X, res.Y, otherPlayer.X, otherPlayer.Y) <= float64(proximityRadius) {
+				existingMeeting := findMeetingByParticipant(otherPlayer.Id)
+				if existingMeeting != nil {
+					existingMeeting.Participants = append(existingMeeting.Participants, playerId)
+				} else {
+					meetingID := generateMeetingID()
+					meetings[meetingID] = &Meeting{
+						Id:           meetingID,
+						Participants: []string{playerId, otherPlayer.Id},
+					}
+				}
+				break
+			}
+		}
+	}
+	broadcastMeetings()
+}
+
+func findPlayerByID(id string) *player {
+	for _, p := range clients {
+		if p.Id == id {
+			return &p
+		}
+	}
+	return nil
+}
+
+func findMeetingByParticipant(playerId string) *Meeting {
+	for _, meeting := range meetings {
+		for _, participant := range meeting.Participants {
+			if participant == playerId {
+				return meeting
+			}
+		}
+	}
+	return nil
+}
+
+func removeParticipants(participants []string, playerId string) []string {
+	for i, id := range participants {
+		if id == playerId {
+			return append(participants[:i], participants[i+1:]...)
+		}
+	}
+	return participants
+}
+
+func generateMeetingID() string {
+	return fmt.Sprintf("meeting-%d", time.Now().UnixNano())
+}
+
+func broadcastMeetings() {
+	for client := range clients {
+		client.WriteJSON(map[string]interface{}{
+			"type":     "meeting_update",
+			"meetings": meetings,
+		})
+	}
+}
+
 func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -77,7 +172,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	res := wsData{}
+	res := player{}
 	clients[conn] = res
 	defer delete(clients, conn)
 
@@ -88,7 +183,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// leaveMessage := []byte(name + " has left")
 			// broadcastMessage(websocket.TextMessage, leaveMessage)
-			removeRsp := wsData{
+			removeRsp := player{
 				Type: "remove",
 				X:    clients[conn].X,
 				Y:    clients[conn].Y,
@@ -123,7 +218,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if res.Type == "move" {
-			broadcastMessage(msgType, data)
+			manageProximity(conn, res)
 		}
 
 		if res.Type == "chat" {
