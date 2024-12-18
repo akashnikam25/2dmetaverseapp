@@ -92,8 +92,7 @@ func manageProximity(conn *websocket.Conn, res player) {
 			otherplayer := findPlayerByID(participantID)
 
 			if otherplayer != nil && calculateDistance(res.X, res.Y, otherplayer.X, otherplayer.Y) > float64(proximityRadius) {
-				meeting.Participants = removeParticipants(meeting.Participants, playerId)
-				updatedMeeting = true
+				meeting.Participants, updatedMeeting = removeParticipants(meeting.Participants, playerId)
 
 				if len(meeting.Participants) == 1 {
 					delete(meetings, meeting.Id)
@@ -147,13 +146,13 @@ func findMeetingByParticipant(playerId string) *Meeting {
 	return nil
 }
 
-func removeParticipants(participants []string, playerId string) []string {
+func removeParticipants(participants []string, playerId string) ([]string, bool) {
 	for i, id := range participants {
 		if id == playerId {
-			return append(participants[:i], participants[i+1:]...)
+			return append(participants[:i], participants[i+1:]...), true
 		}
 	}
-	return participants
+	return participants, false
 }
 
 func generateMeetingID() string {
