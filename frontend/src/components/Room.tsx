@@ -44,7 +44,7 @@ export function RoomComp(){
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
         const animsFrameRate = 15
-        
+
         sprite?.anims.create({
             key: 'nancy_idle_right',
             frames: sprite.anims.generateFrameNames('nancy', {
@@ -163,6 +163,8 @@ export function RoomComp(){
             repeat: 0,
             frameRate: animsFrameRate,
         })
+        
+        sprite.anims.play(message.anims, true)
 
       }else if (message.type === "remove"){
        sc?.children.each((child)=>{
