@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"sync"
 	"time"
 
 	"2dvideoapp/pkg/room"
@@ -48,7 +49,11 @@ func Run() error {
 	return http.ListenAndServe(":8000", router)
 }
 
+var broadcastMutex = &sync.Mutex{}
+
 func broadcastMessage(msgType int, message []byte) {
+	broadcastMutex.Lock()
+	defer broadcastMutex.Unlock()
 
 	for client := range clients {
 		client.WriteMessage(msgType, message)
@@ -56,6 +61,8 @@ func broadcastMessage(msgType int, message []byte) {
 }
 
 func addNewUser(msgType int, message []byte, conn *websocket.Conn) {
+	broadcastMutex.Lock()
+	defer broadcastMutex.Unlock()
 
 	for client, res := range clients {
 		if client != conn {
@@ -160,6 +167,9 @@ func generateMeetingID() string {
 }
 
 func broadcastMeetings() {
+	broadcastMutex.Lock()
+	defer broadcastMutex.Unlock()
+
 	for client := range clients {
 		client.WriteJSON(map[string]interface{}{
 			"type":     "meeting_update",
@@ -180,13 +190,9 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 	clients[conn] = res
 	defer delete(clients, conn)
 
-	// joinMessage := []byte(name + " has joined")
-	// broadcastMessage(websocket.TextMessage, joinMessage)
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
-			// leaveMessage := []byte(name + " has left")
-			// broadcastMessage(websocket.TextMessage, leaveMessage)
 			removeRsp := player{
 				Type: "remove",
 				X:    clients[conn].X,
@@ -198,6 +204,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 				log.Panic(err)
 			}
 
+			broadcastMutex.Lock()
 			for client := range clients {
 				if client != conn {
 					err = client.WriteMessage(websocket.TextMessage, jsonRsp)
@@ -206,6 +213,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+			broadcastMutex.Unlock()
 			return
 		}
 		res = clients[conn]
@@ -222,7 +230,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if res.Type == "move" {
-			broadcastMessage(msgType, data)
+			go broadcastMessage(msgType, data)
 			go manageProximity(conn, res)
 		}
 
