@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom"
 import { IRefPhaserGame, PhaseGame } from "../room/PhaserGame"
 import { v4 as uuidv4 } from 'uuid';
 import { Room } from "../room/scenes/room";
+import { createAnimation } from "../room/CreateAnimation";
 
 
  type Player  = {
@@ -36,134 +37,13 @@ export function RoomComp(){
   if (socket != null) {
     socket.onmessage = (event)=>{
       const message = JSON.parse(event.data) ;
-
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
 
-      
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
-        const animsFrameRate = 15
-
-        sprite?.anims.create({
-            key: 'nancy_idle_right',
-            frames: sprite.anims.generateFrameNames('nancy', {
-            start: 0,
-            end: 5,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-        sprite?.anims.create({
-            key: 'nancy_idle_up',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 6,
-            end: 11,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_idle_left',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 12,
-            end: 17,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_idle_down',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 18,
-            end: 23,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_run_right',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 24,
-            end: 29,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_run_up',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 30,
-            end: 35,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_run_left',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 36,
-            end: 41,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_run_down',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 42,
-            end: 47,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_sit_down',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 48,
-            end: 48,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_sit_left',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 49,
-            end: 49,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_sit_right',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 50,
-            end: 50,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        sprite?.anims.create({
-            key: 'nancy_sit_up',
-            frames: sprite?.anims.generateFrameNames('nancy', {
-            start: 51,
-            end: 51,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
         
+        createAnimation(sprite)
         sprite.anims.play(message.anims, true)
 
       }else if (message.type === "remove"){
@@ -229,3 +109,4 @@ export function RoomComp(){
     </>
   )
 }
+

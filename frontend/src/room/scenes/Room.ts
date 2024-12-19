@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from "phaser";
 import { EventBus } from "../EventBus";
+import { createAnimation } from "../CreateAnimation";
 
 
 
@@ -20,128 +21,8 @@ export class Room extends Scene {
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0x00ff00 } })
         EventBus.emit('current-scene-ready', this);
-
-        const animsFrameRate = 15
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_idle_right',
-            frames: this.playerSprite.anims.generateFrameNames('nancy', {
-            start: 0,
-            end: 5,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_idle_up',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 6,
-            end: 11,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_idle_left',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 12,
-            end: 17,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_idle_down',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 18,
-            end: 23,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate * 0.6,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_run_right',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 24,
-            end: 29,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_run_up',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 30,
-            end: 35,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_run_left',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 36,
-            end: 41,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_run_down',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 42,
-            end: 47,
-            }),
-            repeat: -1,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_sit_down',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 48,
-            end: 48,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_sit_left',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 49,
-            end: 49,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_sit_right',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 50,
-            end: 50,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
-
-        this.playerSprite?.anims.create({
-            key: 'nancy_sit_up',
-            frames: this.playerSprite?.anims.generateFrameNames('nancy', {
-            start: 51,
-            end: 51,
-            }),
-            repeat: 0,
-            frameRate: animsFrameRate,
-        })
+        if (this.playerSprite)
+        createAnimation(this.playerSprite)
     }
 
     update() {
