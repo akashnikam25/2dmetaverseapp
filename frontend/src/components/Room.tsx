@@ -42,7 +42,6 @@ export function RoomComp(){
 
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
-        
         createAnimation(sprite)
         sprite.anims.play(message.anims, true)
 
@@ -68,6 +67,8 @@ export function RoomComp(){
       }
       else if (message.type === "meeting_update"){
         console.log("meetings :- ", message.meetings)
+        sc.playerSprite?.getData("id")
+
       }
     }
   }
@@ -105,6 +106,7 @@ export function RoomComp(){
     <>
       <div className="bg-black-500">
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
+        <button onClick={()=>{console.log("Hello from chat")} }>Chat</button>
       </div>
     </>
   )

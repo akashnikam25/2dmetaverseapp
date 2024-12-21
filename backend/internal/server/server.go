@@ -40,6 +40,7 @@ var upgrader = websocket.Upgrader{
 
 var clients = make(map[*websocket.Conn]player)
 var meetings = make(map[string]*Meeting)
+var participantToMeeting = make(map[string]string)
 
 func Run() error {
 	router := mux.NewRouter()
@@ -100,6 +101,7 @@ func manageProximity(conn *websocket.Conn, res player) {
 
 			if otherplayer != nil && calculateDistance(res.X, res.Y, otherplayer.X, otherplayer.Y) > float64(proximityRadius) {
 				meeting.Participants, updatedMeeting = removeParticipants(meeting.Participants, playerId)
+				delete(participantToMeeting, playerId)
 
 				if len(meeting.Participants) == 1 {
 					delete(meetings, meeting.Id)
@@ -119,12 +121,17 @@ func manageProximity(conn *websocket.Conn, res player) {
 						}
 					}
 					existingMeeting.Participants = append(existingMeeting.Participants, playerId)
+					participantToMeeting[playerId] = existingMeeting.Id
 				} else {
 					meetingID := generateMeetingID()
 					meetings[meetingID] = &Meeting{
 						Id:           meetingID,
 						Participants: []string{playerId, otherPlayer.Id},
 					}
+
+					participantToMeeting[playerId] = meetingID
+					participantToMeeting[otherPlayer.Id] = meetingID
+
 				}
 				break
 			}
@@ -172,8 +179,9 @@ func broadcastMeetings() {
 
 	for client := range clients {
 		client.WriteJSON(map[string]interface{}{
-			"type":     "meeting_update",
-			"meetings": meetings,
+			"type":         "meeting_update",
+			"meetings":     meetings,
+			"participants": participantToMeeting,
 		})
 	}
 }
