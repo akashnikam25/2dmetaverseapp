@@ -31,7 +31,6 @@ export class Room extends Scene {
 
         const speed = 5;
         let moved = false;
-        const proximityRadius = 50;
 
         let newX = this.playerSprite.x;
         let newY = this.playerSprite.y;
@@ -68,8 +67,6 @@ export class Room extends Scene {
                     Phaser.Math.Distance.Between(newX, newY, position.x, position.y) < 30 
                 );
             });
-
-       
 
             if (!collision && this.handleMoveSprite) {
                 this.sprites.set(this.playerSprite.getData("id"),{"x":newX, "y":newY})

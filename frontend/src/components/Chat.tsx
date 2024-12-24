@@ -1,9 +1,15 @@
 import React from 'react';
 
-const Chat: React.FC = () => {
+
+type ChatProps = {
+  meetingId: string;
+};
+
+const Chat = ({ meetingId }: ChatProps) => {
     const [messages, setMessages] = React.useState<{ text: string, sender: 'me' | 'other' }[]>([]);
     const [message, setMessage] = React.useState<string>('');
     const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+    console.log("meetings Id  ",meetingId)
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -19,7 +25,6 @@ const Chat: React.FC = () => {
         <div className="fixed bottom-0 right-0 m-4 w-80 h-screen bg-white shadow-lg rounded-lg flex flex-col">
             <div className="bg-blue-500 text-white p-2 rounded-t-lg">Chat</div>
             <div className="p-4 flex-grow overflow-y-auto flex flex-col">
-            {/* Messages will go here */}
             {messages.map((message, index) => (
                 <div 
                 key={index} 
