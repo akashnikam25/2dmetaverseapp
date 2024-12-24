@@ -6,8 +6,7 @@ import { Room } from "../room/scenes/room";
 import { createAnimation } from "../room/CreateAnimation";
 import Chat from "./Chat";
 
-
- type Player  = {
+type Player  = {
   type: string;
   x: number;
   y: number;
@@ -15,12 +14,12 @@ import Chat from "./Chat";
   anims: string;
 };
 
-
 export function RoomComp(){
  const [socket, setSocket] = useState<WebSocket| null>(null)
  const locator = useLocation()
  const phaserRef = useRef<IRefPhaserGame | null>(null);
  const [isChatOpen, setIsChatOpen] = useState(false)
+ const [meetingId, setMeetingId] = useState<string>("");
 
   useEffect(()=>{
     if (socket== null){
@@ -68,10 +67,10 @@ export function RoomComp(){
         })
       }
       else if (message.type === "meeting_update"){
-        console.log("meetings :- ", message.meetings)
-        console.log("participant to meetings :- ", message.participants)
-        sc.playerSprite?.getData("id")
-
+        const playerId = sc.playerSprite?.getData("id")
+        const meetingId = message.participants[playerId]
+        console.log("meetingId  : ", meetingId)
+        setMeetingId(meetingId)
       }
     }
   }
@@ -109,10 +108,11 @@ export function RoomComp(){
     <>
       <div className="bg-black-500">
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
-        <button onClick={()=>{ setIsChatOpen(!isChatOpen) } }>Chat</button>
-        {isChatOpen?<Chat></Chat>:""}
+        <button onClick={()=>{          
+          setIsChatOpen(!isChatOpen) 
+          } }>Chat</button>
+        {isChatOpen ? <Chat meetingId={meetingId}  /> : ""}
       </div>
     </>
   )
 }
-
