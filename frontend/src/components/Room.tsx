@@ -14,12 +14,20 @@ type Player  = {
   anims: string;
 };
 
+export type ChatMessage = {
+  Sender : string;
+  Message : string;
+  Timestamp : number;
+};
+
 export function RoomComp(){
  const [socket, setSocket] = useState<WebSocket| null>(null)
  const locator = useLocation()
  const phaserRef = useRef<IRefPhaserGame | null>(null);
  const [isChatOpen, setIsChatOpen] = useState(false)
  const [meetingId, setMeetingId] = useState<string>("");
+ const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+ const [spriteId, setSpriteId] = useState<string>("")
 
   useEffect(()=>{
     if (socket== null){
@@ -38,12 +46,16 @@ export function RoomComp(){
   if (socket != null) {
     socket.onmessage = (event)=>{
       const message = JSON.parse(event.data) ;
+      //console.log("message : ", message)
       const sc = phaserRef.current?.scene as Room
       sc.sprites.set(message.id,{"x":message.x, "y":message.y})
 
       if (message.type === "add"){
         const sprite = sc?.add.sprite(message.x, message.y, 'nancy', 20).setData("id", message.id)
         createAnimation(sprite)
+        if (message.anims === ""){
+          message.anims = "nancy_idle"
+        }
         sprite.anims.play(message.anims, true)
 
       }else if (message.type === "remove"){
@@ -72,6 +84,11 @@ export function RoomComp(){
         console.log("meetingId  : ", meetingId)
         setMeetingId(meetingId)
       }
+      else if (message.type === "allMessages"){
+         message.messages.forEach((msg: ChatMessage)=>{
+          setChatMessages((prevMessages)=>[...prevMessages, msg])
+         })
+      }
     }
   }
   
@@ -89,6 +106,13 @@ export function RoomComp(){
     } 
   }
 
+  function getAllMessages(){
+    if (socket){
+      const getMessages = JSON.stringify({"type":"getAllMessages", "chatMsg":{"Sender":spriteId}})
+      socket.send(getMessages)
+    }
+  }
+
   const currentScene = (scene: Phaser.Scene) => {
         if (scene){
           const uuid = uuidv4()
@@ -101,6 +125,7 @@ export function RoomComp(){
           (scene as Room).handleMoveSprite = handleMoveSprite;
           (scene as Room).playerSprite = sprite;
           (scene as Room).sprites.set(uuid, {"x": x, "y":y});
+          setSpriteId(uuid)
         }
   }
 
@@ -108,10 +133,13 @@ export function RoomComp(){
     <>
       <div className="bg-black-500">
         <PhaseGame ref={phaserRef} currentActiveScene={currentScene} />
-        <button onClick={()=>{          
+        <button onClick={()=>{  
+          if(!isChatOpen){
+            getAllMessages()
+          }        
           setIsChatOpen(!isChatOpen) 
           } }>Chat</button>
-        {isChatOpen ? <Chat meetingId={meetingId}  /> : ""}
+        {isChatOpen ? <Chat meetingId={meetingId} spriteId={spriteId} socket={socket} chatMessages={chatMessages} /> : ""}
       </div>
     </>
   )

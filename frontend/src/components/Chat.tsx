@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChatMessage } from './Room';
+
+
 
 
 type ChatProps = {
   meetingId: string;
+  spriteId: string;
+  socket: WebSocket | null;
+  chatMessages:  ChatMessage[]
 };
 
-const Chat = ({ meetingId }: ChatProps) => {
-    const [messages, setMessages] = React.useState<{ text: string, sender: 'me' | 'other' }[]>([]);
-    const [message, setMessage] = React.useState<string>('');
-    const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
-    console.log("meetings Id  ",meetingId)
+const Chat = ({ meetingId, spriteId, socket, chatMessages }: ChatProps) => {
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [message, setMessage] = useState<string>('');
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -17,9 +22,19 @@ const Chat = ({ meetingId }: ChatProps) => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (!chatMessages) return;
+        chatMessages.forEach((msg) => {
+            setMessages((prev) => [...prev, msg]);
+        })
+
+    }, [chatMessages]);
+
+    
 
     return (
         <div className="fixed bottom-0 right-0 m-4 w-80 h-screen bg-white shadow-lg rounded-lg flex flex-col">
@@ -28,9 +43,9 @@ const Chat = ({ meetingId }: ChatProps) => {
             {messages.map((message, index) => (
                 <div 
                 key={index} 
-                className={`mb-2 p-2 rounded-lg inline-block max-w-xs break-words whitespace-pre-wrap ${message.sender === 'me' ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}
+                className={`mb-2 p-2 rounded-lg inline-block max-w-xs break-words whitespace-pre-wrap ${message.Sender === spriteId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}
                 >
-                {message.text}
+                {message.Message}
                 </div>
             ))}
             <div ref={messagesEndRef} />
@@ -46,7 +61,18 @@ const Chat = ({ meetingId }: ChatProps) => {
             <button 
                 className="bg-blue-500 text-white p-2 rounded-r-lg" 
                 onClick={() => {
-                setMessages([...messages, { text: message, sender: 'me' }]);
+                if (!socket) return;
+                const msg = {
+                    type: 'chatMessage',
+                    chatMsg: {
+                        Sender: spriteId,
+                        Message: message,
+                        Timestamp: Date.now()
+                    },
+                    meetingId: meetingId
+                }
+                socket.send(JSON.stringify(msg));
+                setMessages([...messages, msg.chatMsg]);
                 setMessage('');
                 }}
             >

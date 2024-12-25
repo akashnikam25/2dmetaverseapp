@@ -18,16 +18,28 @@ import (
 const proximityRadius = 50
 
 type player struct {
-	Type  string `json:"type"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
-	Id    string `json:"id"`
+	Type  string `json:"type" required:"true"`
+	X     int    `json:"x" required:"true"`
+	Y     int    `json:"y" required:"true"`
+	Id    string `json:"id" required:"true"`
 	Anims string `json:"anims"`
 }
 
 type Meeting struct {
 	Id           string
 	Participants []string
+}
+
+type Conversation struct {
+	Type      string      `json:"type" required:"true"`
+	ChatMsg   ChatMessage `json:"chatMsg"`
+	MeetingID string      `json:"meetingID"`
+}
+
+type ChatMessage struct {
+	Sender    string `json:"sender"`
+	Message   string `json:"message"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -41,6 +53,8 @@ var upgrader = websocket.Upgrader{
 var clients = make(map[*websocket.Conn]player)
 var meetings = make(map[string]*Meeting)
 var participantToMeeting = make(map[string]string)
+var participantMessages = make(map[string][]ChatMessage)
+var broadcastMutex = &sync.Mutex{}
 
 func Run() error {
 	router := mux.NewRouter()
@@ -49,8 +63,6 @@ func Run() error {
 	log.Println("Starting server on :8000...")
 	return http.ListenAndServe(":8000", router)
 }
-
-var broadcastMutex = &sync.Mutex{}
 
 func broadcastMessage(msgType int, message []byte) {
 	broadcastMutex.Lock()
@@ -224,28 +236,65 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 			broadcastMutex.Unlock()
 			return
 		}
-		res = clients[conn]
-		err = json.Unmarshal(data, &res)
+
+		var baseMsg map[string]interface{}
+		err = json.Unmarshal(data, &baseMsg)
 		if err != nil {
 			log.Panic(err)
 		}
-		clients[conn] = res
 
-		fmt.Println("response ", res)
-
-		if res.Type == "add" {
-			go addNewUser(msgType, data, conn)
+		msgTypeStr, ok := baseMsg["type"].(string)
+		if !ok {
+			log.Panic("Invalid message type")
 		}
 
-		if res.Type == "move" {
-			go broadcastMessage(msgType, data)
-			go manageProximity(conn, res)
-		}
+		if msgTypeStr == "getAllMessages" || msgTypeStr == "chatMessage" {
+			chat := Conversation{}
+			err = json.Unmarshal(data, &chat)
+			if err != nil {
+				log.Panic(err)
+			}
 
-		if res.Type == "chat" {
-			msg := name + ":" + string(data)
-			go broadcastMessage(msgType, []byte(msg))
-		}
+			if chat.Type == "chatMessage" {
+				fmt.Println("chat message ", chat)
+				participantMessages[chat.ChatMsg.Sender] = append(participantMessages[chat.ChatMsg.Sender], chat.ChatMsg)
+				fmt.Println("participantMessages ", participantMessages)
+				// go broadcastMessage(msgType, data)
+			}
 
+			if chat.Type == "getAllMessages" {
+				fmt.Println("get all messages ", participantMessages)
+				if messages, ok := participantMessages[chat.ChatMsg.Sender]; ok {
+					fmt.Println("messages ", messages)
+					conn.WriteJSON(map[string]interface{}{
+						"type":     "allMessages",
+						"messages": messages,
+					})
+				}
+			}
+		} else {
+			res = clients[conn]
+			err = json.Unmarshal(data, &res)
+			if err != nil {
+				log.Panic(err)
+			}
+			clients[conn] = res
+
+			//fmt.Println("response ", res)
+
+			if res.Type == "add" {
+				go addNewUser(msgType, data, conn)
+			}
+
+			if res.Type == "move" {
+				go broadcastMessage(msgType, data)
+				go manageProximity(conn, res)
+			}
+
+			if res.Type == "chat" {
+				msg := name + ":" + string(data)
+				go broadcastMessage(msgType, []byte(msg))
+			}
+		}
 	}
 }
