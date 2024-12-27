@@ -280,11 +280,7 @@ func createOrjoinPublicLobby(w http.ResponseWriter, r *http.Request) {
 			}
 			clients[conn] = res
 
-<<<<<<< HEAD
 			//fmt.Println("response ", res)
-=======
-			fmt.Println("response ", res)
->>>>>>> 090232451500f50e8b32a02fc82497929a0e4e4f
 
 			if res.Type == "add" {
 				go addNewUser(msgType, data, conn)
