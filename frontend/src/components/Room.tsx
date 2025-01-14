@@ -16,7 +16,7 @@ type Player  = {
 
 export type ChatMessage = {
   Sender : string;
-  Message : string;
+  message : string;
   Timestamp : number;
 };
 
@@ -84,11 +84,6 @@ export function RoomComp(){
         console.log("meetingId  : ", meetingId)
         setMeetingId(meetingId)
       }
-      else if (message.type === "allMessages"){
-         message.messages.forEach((msg: ChatMessage)=>{
-          setChatMessages((prevMessages)=>[...prevMessages, msg])
-         })
-      }
     }
   }
   
@@ -139,7 +134,7 @@ export function RoomComp(){
           }        
           setIsChatOpen(!isChatOpen) 
           } }>Chat</button>
-        {isChatOpen ? <Chat meetingId={meetingId} spriteId={spriteId} socket={socket} chatMessages={chatMessages} /> : ""}
+        {isChatOpen ? <Chat meetingId={meetingId} spriteId={spriteId} socket={socket} /> : ""}
       </div>
     </>
   )

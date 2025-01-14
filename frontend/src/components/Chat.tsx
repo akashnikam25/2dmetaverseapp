@@ -8,10 +8,9 @@ type ChatProps = {
   meetingId: string;
   spriteId: string;
   socket: WebSocket | null;
-  chatMessages:  ChatMessage[]
 };
 
-const Chat = ({ meetingId, spriteId, socket, chatMessages }: ChatProps) => {
+const Chat = ({ meetingId, spriteId, socket }: ChatProps) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [message, setMessage] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -26,26 +25,27 @@ const Chat = ({ meetingId, spriteId, socket, chatMessages }: ChatProps) => {
         scrollToBottom();
     }, [messages]);
 
-    useEffect(() => {
-        if (!chatMessages) return;
-        chatMessages.forEach((msg) => {
-            setMessages((prev) => [...prev, msg]);
-        })
-
-    }, [chatMessages]);
-
-    
+    useEffect(()=>{
+        if (socket == null) return;
+        socket.onmessage = (event)=>{
+            const msg = JSON.parse(event.data) ;
+            if (msg.type === "allMessages"){
+                setMessages(msg.messages)
+            }
+            
+        }
+    },[socket])
 
     return (
         <div className="fixed bottom-0 right-0 m-4 w-80 h-screen bg-white shadow-lg rounded-lg flex flex-col">
             <div className="bg-blue-500 text-white p-2 rounded-t-lg">Chat</div>
             <div className="p-4 flex-grow overflow-y-auto flex flex-col">
-            {messages.map((message, index) => (
+            {messages.length >0 && messages.map((message, index) => (
                 <div 
                 key={index} 
                 className={`mb-2 p-2 rounded-lg inline-block max-w-xs break-words whitespace-pre-wrap ${message.Sender === spriteId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}
                 >
-                {message.Message}
+                {message.message}
                 </div>
             ))}
             <div ref={messagesEndRef} />
@@ -66,7 +66,7 @@ const Chat = ({ meetingId, spriteId, socket, chatMessages }: ChatProps) => {
                     type: 'chatMessage',
                     chatMsg: {
                         Sender: spriteId,
-                        Message: message,
+                        message: message,
                         Timestamp: Date.now()
                     },
                     meetingId: meetingId
