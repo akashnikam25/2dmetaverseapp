@@ -15,9 +15,9 @@ type Player  = {
 };
 
 export type ChatMessage = {
-  Sender : string;
+  sender : string;
   message : string;
-  Timestamp : number;
+  timestamp : number;
 };
 
 export function RoomComp(){
@@ -26,7 +26,6 @@ export function RoomComp(){
  const phaserRef = useRef<IRefPhaserGame | null>(null);
  const [isChatOpen, setIsChatOpen] = useState(false)
  const [meetingId, setMeetingId] = useState<string>("");
- const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
  const [spriteId, setSpriteId] = useState<string>("")
 
   useEffect(()=>{

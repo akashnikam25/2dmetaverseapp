@@ -43,7 +43,7 @@ const Chat = ({ meetingId, spriteId, socket }: ChatProps) => {
             {messages.length >0 && messages.map((message, index) => (
                 <div 
                 key={index} 
-                className={`mb-2 p-2 rounded-lg inline-block max-w-xs break-words whitespace-pre-wrap ${message.Sender === spriteId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}
+                className={`mb-2 p-2 rounded-lg inline-block max-w-xs break-words whitespace-pre-wrap ${message.sender === spriteId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}
                 >
                 {message.message}
                 </div>
@@ -65,9 +65,9 @@ const Chat = ({ meetingId, spriteId, socket }: ChatProps) => {
                 const msg = {
                     type: 'chatMessage',
                     chatMsg: {
-                        Sender: spriteId,
+                        sender: spriteId,
                         message: message,
-                        Timestamp: Date.now()
+                        timestamp: Date.now()
                     },
                     meetingId: meetingId
                 }
